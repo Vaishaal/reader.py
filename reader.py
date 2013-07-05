@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import ast
-import sys
 import argparse
 
 desc = '''
@@ -12,7 +11,8 @@ def grade(module, func_name):
     pass
 
 def node_count(module):
-    pass
+    'Count the number of ast nodes in the source file.'
+    return len(list(ast.walk(module)))
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=desc)
