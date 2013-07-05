@@ -27,19 +27,20 @@ def loop_count(func_def):
 
 def max_loop_depth(func_def):
   loops = [] 
+  max_loop_depth = 0
   for node in ast.iter_child_nodes(func_def):
     if is_loop(node):
       loops.append(node) 
-  max_loop_depth = loops != [] 
+
 
   for loop in loops:
-    this_loop_count = 0
+    this_loop_count = 1
     for node in ast.walk(loop):
       if is_loop(node):
         this_loop_count += 1
     max_loop_depth = max(this_loop_count,this_loop_count) 
 
-  return max_loop_depth  
+  return  max_loop_depth
 
 def is_loop(node):
   return type(node) in {ast.GeneratorExp,ast.For,ast.While,ast.ListComp} 
