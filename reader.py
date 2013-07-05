@@ -10,9 +10,13 @@ reader.py -- A reader for 61A
 def grade(module, func_name):
     pass
 
-def node_count(module):
+def node_count(module, func_name):
     'Count the number of ast nodes in the source file.'
-    return len(list(ast.walk(module)))
+    tlds = list(ast.iter_child_nodes(module))
+    for tld in tlds:
+        if isinstance(tld, ast.FunctionDef) and tld.name == func_name:
+            return len(list(ast.walk(tld)))
+    return 0
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=desc)
