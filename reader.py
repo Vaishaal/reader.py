@@ -8,24 +8,27 @@ import sklearn.svm as svm
 desc = '''
 reader.py -- A reader for 61A
 '''
-def grade(module, func_def):
-    clf = svm.SVC(kernel='linear', C=0.025)
-    print(node_count(func_def))
-    print(loop_count(func_def))
-    print(max_loop_depth(func_def))
-    pass
+def score_func(func_def):
+    feat_vector = []
+    all_globals = globals() 
+    for global_name,global_var in all_globals.iteritems():
+      if global_ver[:4] == 'feat':
+        feat_vector.append(global_var(func_def)) 
+    return feat_vector
+          
+         
 
-def node_count(func_def):
+def feat_node_count(func_def):
     'Count the number of ast nodes in the source file.'
     return len(list(ast.walk(func_def)))
 
-def loop_count(func_def):
+def feat_loop_count(func_def):
   count =0
   for node in ast.walk(func_def):
     count += is_loop(node) 
   return count 
 
-def max_loop_depth(func_def):
+def feat_max_loop_depth(func_def):
   loops = [] 
   max_loop_depth = 0
   for node in ast.iter_child_nodes(func_def):
@@ -45,19 +48,28 @@ def max_loop_depth(func_def):
 def is_loop(node):
   return type(node) in {ast.GeneratorExp,ast.For,ast.While,ast.ListComp} 
 
+
+def score(file_name):
+    with open(args.source_file, 'r') as f:
+        module = ast.parse(f.read())
+    tlds = list(ast.iter_child_nodes(module))
+    all_features = [] 
+    for tld in tlds:
+      if isinstance(tld, ast.FunctionDef):
+            all_features += grade(module, tld)
+    return all_features 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('source_file')
-    parser.add_argument('function_name')
     args = parser.parse_args()
 
     with open(args.source_file, 'r') as f:
         module = ast.parse(f.read())
 
     tlds = list(ast.iter_child_nodes(module))
+    feature
     for tld in tlds:
-        if isinstance(tld, ast.FunctionDef) and tld.name == args.function_name:
+      if isinstance(tld, ast.FunctionDef):
             grade(module, tld)
             break
-    else:
-        print('[error] Could not find function {0}.'.format(args.function_name))
