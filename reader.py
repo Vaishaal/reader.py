@@ -11,8 +11,8 @@ reader.py -- A reader for 61A
 def score_func(func_def):
     feat_vector = []
     all_globals = globals() 
-    for global_name,global_var in all_globals.iteritems():
-      if global_ver[:4] == 'feat':
+    for global_name,global_var in all_globals.items():
+      if global_name[:4] == 'feat':
         feat_vector.append(global_var(func_def)) 
     return feat_vector
           
@@ -56,20 +56,11 @@ def score(file_name):
     all_features = [] 
     for tld in tlds:
       if isinstance(tld, ast.FunctionDef):
-            all_features += grade(module, tld)
+            all_features += score_func(tld)
     return all_features 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('source_file')
     args = parser.parse_args()
-
-    with open(args.source_file, 'r') as f:
-        module = ast.parse(f.read())
-
-    tlds = list(ast.iter_child_nodes(module))
-    feature
-    for tld in tlds:
-      if isinstance(tld, ast.FunctionDef):
-            grade(module, tld)
-            break
+    print(score(args.source_file)) 
