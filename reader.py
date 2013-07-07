@@ -2,12 +2,14 @@
 
 import ast
 import argparse
+from collections import defaultdict
 
 import sklearn.svm as svm
 
 desc = '''
 reader.py -- A reader for 61A
 '''
+
 def score_func(func_def):
     feat_vector = []
     all_globals = globals() 
@@ -16,11 +18,22 @@ def score_func(func_def):
         feat_vector.append(global_var(func_def)) 
     return feat_vector
           
-         
-
 def feat_node_count(func_def):
     'Count the number of ast nodes in the source file.'
     return len(list(ast.walk(func_def)))
+
+def feat_dry_violations(func_def):
+    'Hash patterns in the AST to check for repetitious code.'
+
+    def compute_hashes(node, phash, dhash):
+        'Track hashes of AST nodes while traversing the tree.'
+        for child in ast.iter_child_nodes(node):
+            dhash[phash] += 1
+            compute_hashes(child, hash((phash, type(child))), dhash)
+
+    hashes = defaultdict(int)
+    compute_hashes(func_def, hash(type(func_def)), hashes)
+    return sum(hashes.values()) - len(hashes)
 
 def feat_loop_count(func_def):
   count =0
@@ -35,7 +48,6 @@ def feat_max_loop_depth(func_def):
     if is_loop(node):
       loops.append(node) 
 
-
   for loop in loops:
     this_loop_count = 1
     for node in ast.walk(loop):
@@ -47,7 +59,6 @@ def feat_max_loop_depth(func_def):
 
 def is_loop(node):
   return type(node) in {ast.GeneratorExp,ast.For,ast.While,ast.ListComp} 
-
 
 def score(file_name):
     with open(args.source_file, 'r') as f:
