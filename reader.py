@@ -4,11 +4,16 @@ import ast
 import argparse
 from collections import defaultdict
 
-import sklearn.svm as svm
-
 desc = '''
 reader.py -- A reader for 61A
 '''
+
+def list_functions(module):
+  function_names = [] 
+  for node in ast.iter_child_nodes(module):
+    if isinstance(node, ast.FunctionDef):
+      function_names.append(node.name) 
+  return function_names 
 
 def score_func(func_def):
     feat_vector = []
@@ -16,7 +21,7 @@ def score_func(func_def):
     for global_name,global_var in all_globals.items():
       if global_name[:4] == 'feat':
         feat_vector.append(global_var(func_def)) 
-    return feat_vector
+    return tuple(feat_vector)
           
 def feat_node_count(func_def):
     'Count the number of ast nodes in the source file.'
@@ -60,15 +65,18 @@ def feat_max_loop_depth(func_def):
 def is_loop(node):
   return type(node) in {ast.GeneratorExp,ast.For,ast.While,ast.ListComp} 
 
-def score(file_name):
-    with open(args.source_file, 'r') as f:
-        module = ast.parse(f.read())
+def score(file_name,legal_functions):
+    try:
+      with open(file_name, 'r') as f:
+          module = ast.parse(f.read())
+    except Exception:
+      return ()
     tlds = list(ast.iter_child_nodes(module))
     all_features = [] 
     for tld in tlds:
-      if isinstance(tld, ast.FunctionDef):
+      if isinstance(tld, ast.FunctionDef) and tld.name in legal_functions: 
             all_features += score_func(tld)
-    return all_features 
+    return tuple(all_features) 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=desc)
