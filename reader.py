@@ -7,7 +7,26 @@ from collections import defaultdict
 desc = '''
 reader.py -- A reader for 61A
 '''
-
+LEGAL_FUNCTIONS = 
+    ['roll_dice',
+    'take_turn',
+    'take_turn_test',
+    'announce',
+    'draw_number',
+    'draw_dice',
+    'num_allowed_dice',
+    'select_dice',
+    'other',
+    'name',
+    'play',
+    'always_roll',
+    'make_average',
+    'compare_strategies',
+    'eval_strategy_range',
+    'run_experiments',
+    'make_dice_specific_strategy',
+    'make_comeback_strategy',
+    'make_mean_strategy']
 def list_functions(module):
   function_names = [] 
   for node in ast.iter_child_nodes(module):
@@ -65,7 +84,7 @@ def feat_max_loop_depth(func_def):
 def is_loop(node):
   return type(node) in {ast.GeneratorExp,ast.For,ast.While,ast.ListComp} 
 
-def score(file_name,legal_functions):
+def score(file_name):
     try:
       with open(file_name, 'r') as f:
           module = ast.parse(f.read())
@@ -74,7 +93,7 @@ def score(file_name,legal_functions):
     tlds = list(ast.iter_child_nodes(module))
     all_features = [] 
     for tld in tlds:
-      if isinstance(tld, ast.FunctionDef) and tld.name in legal_functions: 
+      if isinstance(tld, ast.FunctionDef) and tld.name in LEGAL_FUNCTIONS: 
             all_features += score_func(tld)
     return tuple(all_features) 
 
